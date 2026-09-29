@@ -1,0 +1,11 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.python-version
+.bedrock_agentcore/
+*.zip
+dependencies.zip
+deployment.zip
+.DS_Store
+.vscode/

@@ -1,0 +1,336 @@
+WARNING:CSAI_Agent:Code Interpreter unavailable, using fallback: Simulated Code Interpreter outage
+=== 1. LOYALTY DISCOUNT VERIFICATION (ALL 3 REVIEWER CHECKS) ===
+[Check 1A - Live $12 Gold Order (4250 pts)]: {"order_total": 12.0, "tier": "Gold", "tier_discount_pct": "10%", "tier_discount": 0.7, "points_redeemed": 500, "points_discount": 5.0, "total_savings": 5.7, "final_total": 6.3, "points_earned": 6, "remaining_points": 3756}
+[Check 1B - Mocked content-wrapped event -> Top-level JSON]: {"order_total": 12.0, "tier": "Gold", "tier_discount_pct": "10%", "tier_discount": 0.7, "points_redeemed": 500, "points_discount": 5.0, "total_savings": 5.7, "final_total": 6.3, "points_earned": 6, "remaining_points": 3756}
+[Check 1C - Exception Fallback Path]: {"order_total": 12.0, "tier": "Gold", "tier_discount_pct": "10%", "tier_discount": 1.2, "points_redeemed": 0, "points_discount": 0.0, "total_savings": 1.2, "final_total": 10.8, "remaining_points": 4250, "note": "Calculated via tier-only fallback (Code Interpreter unavailable)"}
+
+=== 2. GATEWAY tools/list (API TARGET + LAMBDA TARGET) ===
+Tool Name: order-tracker___get_customer | Spec: {"inputSchema": {"json": {"type": "object", "properties": {"basePath": {"type": "string"}, "customer_id": {"type": "string"}}, "required": ["customer_id"]}}, "name": "order-tracker___get_customer", "description": "get_customer"}
+Tool Name: order-tracker___get_customer_orders | Spec: {"inputSchema": {"json": {"type": "object", "properties": {"basePath": {"type": "string"}, "customer_id": {"type": "string"}}, "required": ["customer_id"]}}, "name": "order-tracker___get_customer_orders", "description": "get_customer_orders"}
+Tool Name: order-tracker___get_order | Spec: {"inputSchema": {"json": {"type": "object", "properties": {"basePath": {"type": "string"}, "order_id": {"type": "string"}}, "required": ["order_id"]}}, "name": "order-tracker___get_order", "description": "get_order"}
+Tool Name: refund-processor___check_refund_status | Spec: {"inputSchema": {"json": {"type": "object", "properties": {"refund_id": {"description": "Refund ID to check", "type": "string"}}, "required": ["refund_id"]}}, "name": "refund-processor___check_refund_status", "description": "Check the status of an existing refund."}
+Tool Name: refund-processor___get_return_label | Spec: {"inputSchema": {"json": {"type": "object", "properties": {"order_id": {"description": "Order ID needing a label", "type": "string"}}, "required": ["order_id"]}}, "name": "refund-processor___get_return_label", "description": "Generate a prepaid return shipping label for an order."}
+Tool Name: refund-processor___initiate_refund | Spec: {"inputSchema": {"json": {"type": "object", "properties": {"reason": {"description": "Reason for refund", "type": "string"}, "amount": {"description": "Refund amount in USD", "type": "number"}, "order_id": {"description": "Order ID to refund", "type": "string"}}, "required": ["order_id", "reason"]}}, "name": "refund-processor___initiate_refund", "description": "Initiate a refund for a customer order."}
+
+=== 3. GATEWAY API-BACKED TARGET TRACE (ORDER TRACKING) ===
+
+Tool #1: order-tracker___get_order
+Your order **ORD-001** for the Wireless Headphones Pro has been **SHIPPED** via UPS with tracking number **TRK987654321**. The estimated delivery date is **October 1, 2026**. The order total was $89.99.
+[MCP tools/call] Tool: order-tracker___get_order | Arguments: {"order_id": "ORD-001"}
+[MCP tools/call Result] Status: success | Payload: [{"text": "{\"order_id\":\"ORD-001\",\"customer_id\":\"CUST-123\",\"status\":\"SHIPPED\",\"items\":[{\"name\":\"Wireless Headphones Pro\",\"qty\":1,\"price\":89.99}],\"total\":89.99,\"tracking_number\":\"TRK987654321\",\"carrier\":\"UPS\",\"estimated_delivery\":\"2026-10-01\"}"}]
+
+Final Answer:
+Your order **ORD-001** for the Wireless Headphones Pro has been **SHIPPED** via UPS with tracking number **TRK987654321**. The estimated delivery date is **October 1, 2026**. The order total was $89.99.
+
+=== 4. GATEWAY LAMBDA-BACKED TARGET TRACE (REFUND PROCESSING) ===
+
+Tool #1: refund-processor___initiate_refund
+The refund for your Kindle Paperwhite (Order ORD-002) due to the defective screen has been successfully approved!
+
+**Refund Details:**
+- **Refund ID:** REF-5BPUY8JY
+- **Refund Amount:** $139.99
+- **Status:** Approved
+- **Credit Timeline:** The refund will appear in your account in 3-5 business days (as of September 29, 2026)
+
+Your return request has been processed and the refund will be applied automatically once we receive the returned item. If you have any questions about the return shipping or need a return label, just let me know!
+[MCP tools/call] Tool: refund-processor___initiate_refund | Arguments: {"reason": "defective screen", "order_id": "ORD-002", "amount": 139.99}
+[MCP tools/call Result] Status: success | Payload: [{"text": "{\"statusCode\":200,\"body\":\"{\\\"refund_id\\\": \\\"REF-5BPUY8JY\\\", \\\"order_id\\\": \\\"ORD-002\\\", \\\"status\\\": \\\"APPROVED\\\", \\\"amount\\\": 139.99, \\\"message\\\": \\\"Refund approved. Credit appears in 3-5 business days.\\\", \\\"created_at\\\": \\\"2026-09-29T02:19:36.793133\\\"}\"}"}]
+
+Final Answer:
+The refund for your Kindle Paperwhite (Order ORD-002) due to the defective screen has been successfully approved!
+
+**Refund Details:**
+- **Refund ID:** REF-5BPUY8JY
+- **Refund Amount:** $139.99
+- **Status:** Approved
+- **Credit Timeline:** The refund will appear in your account in 3-5 business days (as of September 29, 2026)
+
+Your return request has been processed and the refund will be applied automatically once we receive the returned item. If you have any questions about the return shipping or need a return label, just let me know!
+
+=== 5. LOYALTY TOOL TRACE ($12 EDGE CASE & $150 ORDER) ===
+
+Tool #1: calculate_loyalty_discount
+As a Gold member, your loyalty discount breakdown on the $12 standard order is:
+
+- **Tier discount (Gold):** $0.70 (10% off)
+- **Points discount:** $5.00 (500 points redeemed)
+- **Total savings:** $5.70
+- **Final total:** $6.30
+
+After this purchase, you'll earn **6 points**, leaving you with **3756 points** remaining.
+[MCP tools/call] Tool: calculate_loyalty_discount | Arguments: {"order_total": 12.0, "loyalty_points": 4250, "tier": "Gold", "product_category": "standard"}
+[MCP tools/call Result] Status: success | Payload: [{"text": "{\"order_total\": 12.0, \"tier\": \"Gold\", \"tier_discount_pct\": \"10%\", \"tier_discount\": 0.7, \"points_redeemed\": 500, \"points_discount\": 5.0, \"total_savings\": 5.7, \"final_total\": 6.3, \"points_earned\": 6, \"remaining_points\": 3756}"}]
+
+Final Answer ($12 Order):
+As a Gold member, your loyalty discount breakdown on the $12 standard order is:
+
+- **Tier discount (Gold):** $0.70 (10% off)
+- **Points discount:** $5.00 (500 points redeemed)
+- **Total savings:** $5.70
+- **Final total:** $6.30
+
+After this purchase, you'll earn **6 points**, leaving you with **3756 points** remaining.
+
+Tool #1: calculate_loyalty_discount
+Your loyalty discount calculation for a $150 standard order is as follows:
+
+- **Gold Tier Discount**: 10% ($11.00)
+- **Points Redeemed**: 4,000 points ($40.00)
+- **Total Savings**: $51.00
+- **Final Total**: $99.00
+- **Points Earned**: 99 points
+- **Remaining Points**: 349 points
+
+This discount applies because you're a Gold member with 4,250 points.
+[MCP tools/call] Tool: calculate_loyalty_discount | Arguments: {"order_total": 150.0, "loyalty_points": 4250, "tier": "Gold", "product_category": "standard"}
+[MCP tools/call Result] Status: success | Payload: [{"text": "{\"order_total\": 150.0, \"tier\": \"Gold\", \"tier_discount_pct\": \"10%\", \"tier_discount\": 11.0, \"points_redeemed\": 4000, \"points_discount\": 40.0, \"total_savings\": 51.0, \"final_total\": 99.0, \"points_earned\": 99, \"remaining_points\": 349}"}]
+
+Final Answer ($150 Order):
+Your loyalty discount calculation for a $150 standard order is as follows:
+
+- **Gold Tier Discount**: 10% ($11.00)
+- **Points Redeemed**: 4,000 points ($40.00)
+- **Total Savings**: $51.00
+- **Final Total**: $99.00
+- **Points Earned**: 99 points
+- **Remaining Points**: 349 points
+
+This discount applies because you're a Gold member with 4,250 points.
+
+=== 6. DEPLOYED AGENTCORE RUNTIME INVOCATIONS (CLOUD ENDPOINT) ===
+╭────────────────────────────────────────────────────────────────── CustomerSupport ──────────────────────────────────────────────────────────────────╮
+│ Session: ec72a847-e578-4969-9e57-4694f3296305                                                                                                       │
+│ Request ID: 8ac3621f-6064-424e-bc15-8194a8fb8563                                                                                                    │
+│ ARN: arn:aws:bedrock-agentcore:us-east-1:220422419370:runtime/CustomerSupport-0lJdjG24IT                                                            │
+│ Logs: aws logs tail /aws/bedrock-agentcore/runtimes/CustomerSupport-0lJdjG24IT-DEFAULT --log-stream-name-prefix "2026/09/29/[runtime-logs" --follow │
+│       aws logs tail /aws/bedrock-agentcore/runtimes/CustomerSupport-0lJdjG24IT-DEFAULT --log-stream-name-prefix "2026/09/29/[runtime-logs" --since  │
+│ 1h                                                                                                                                                  │
+│ GenAI Dashboard: https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#gen-ai-observability/agent-core                                    │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+Response:
+Your order **ORD-001** is currently **SHIPPED** and on its way to you!
+
+Here are the details:
+- **Order Status:** SHIPPED
+- **Items:** Wireless Headphones Pro (1 x $89.99)
+- **Total:** $89.99
+- **Tracking Number:** TRK987654321
+- **Carrier:** UPS
+- **Estimated Delivery:** October 1, 2026
+
+You can track your package using the tracking number TRK987654321 with UPS.
+╭────────────────────────────────────────────────────────────────── CustomerSupport ──────────────────────────────────────────────────────────────────╮
+│ Session: ec72a847-e578-4969-9e57-4694f3296305                                                                                                       │
+│ Request ID: 50a4974c-d3a8-43e2-b2e9-f836caaecc34                                                                                                    │
+│ ARN: arn:aws:bedrock-agentcore:us-east-1:220422419370:runtime/CustomerSupport-0lJdjG24IT                                                            │
+│ Logs: aws logs tail /aws/bedrock-agentcore/runtimes/CustomerSupport-0lJdjG24IT-DEFAULT --log-stream-name-prefix "2026/09/29/[runtime-logs" --follow │
+│       aws logs tail /aws/bedrock-agentcore/runtimes/CustomerSupport-0lJdjG24IT-DEFAULT --log-stream-name-prefix "2026/09/29/[runtime-logs" --since  │
+│ 1h                                                                                                                                                  │
+│ GenAI Dashboard: https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#gen-ai-observability/agent-core                                    │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+Response:
+Perfect! Your refund has been successfully initiated:
+
+**Refund Summary:**
+- **Refund ID:** REF-JPCH2WSF
+- **Order ID:** ORD-002 (Kindle Paperwhite)
+- **Status:** APPROVED
+- **Amount:** $139.99
+- **Message:** "Refund approved. Credit appears in 3-5 business days."
+- **Created At:** September 29, 2026
+
+Your refund of $139.99 has been approved and you should see the credit appear in your account within 3-5 business days. The defective screen issue with
+your Kindle Paperwhite has been properly documented in our system.
+
+Is there anything else I can help you with regarding this return?
+╭────────────────────────────────────────────────────────────────── CustomerSupport ──────────────────────────────────────────────────────────────────╮
+│ Session: ec72a847-e578-4969-9e57-4694f3296305                                                                                                       │
+│ Request ID: 1f11843b-43e8-4c46-902d-2f24bf74a75c                                                                                                    │
+│ ARN: arn:aws:bedrock-agentcore:us-east-1:220422419370:runtime/CustomerSupport-0lJdjG24IT                                                            │
+│ Logs: aws logs tail /aws/bedrock-agentcore/runtimes/CustomerSupport-0lJdjG24IT-DEFAULT --log-stream-name-prefix "2026/09/29/[runtime-logs" --follow │
+│       aws logs tail /aws/bedrock-agentcore/runtimes/CustomerSupport-0lJdjG24IT-DEFAULT --log-stream-name-prefix "2026/09/29/[runtime-logs" --since  │
+│ 1h                                                                                                                                                  │
+│ GenAI Dashboard: https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#gen-ai-observability/agent-core                                    │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+Response:
+### Your Loyalty Discount Summary
+
+- **Order Total:** $12.00  
+- **Your Tier:** Gold  
+- **Tier Discount:** 10% ($0.70)  
+- **Points Redeemed:** 500 points  
+- **Points Discount:** $5.00  
+- **Total Savings:** $5.70  
+- **Final Total After Discount:** $6.30  
+- **Points Earned from This Purchase:** 6 points  
+- **Remaining Points Balance:** 3,756 points  
+
+Your Gold membership and loyalty points have saved you a total of **$5.70** on this order!
+
+=== 7. AGENTCORE RUNTIME CLOUDWATCH LOG TRACES ===
+2026-09-29T02:34:54.363000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 Tool #1: order-tracker___get_order
+2026-09-29T02:34:55.382000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 Your order **ORD-001** is currently **SHIPPED** and on its way to you!
+2026-09-29T02:34:55.383000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 Here are the details:
+2026-09-29T02:34:55.383000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 - **Order Status:** SHIPPED
+2026-09-29T02:34:55.384000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 - **Items:** Wireless Headphones Pro (1 x $89.99)
+2026-09-29T02:34:55.385000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 - **Total:** $89.99
+2026-09-29T02:34:55.385000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 - **Tracking Number:** TRK987654321
+2026-09-29T02:34:55.386000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 - **Carrier:** UPS
+2026-09-29T02:34:55.475000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 - **Estimated Delivery:** October 1, 2026
+2026-09-29T02:34:55.590000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 You can track your package using the tracking number TRK987654321 with UPS.
+2026-09-29T02:34:55.590000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 [MCP tools/call] Tool: order-tracker___get_order | Arguments: {"order_id": "ORD-001"}
+2026-09-29T02:34:55.590000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 [MCP tools/call Result] Status: success | Payload: [{"text": "{\"order_id\":\"ORD-001\",\"customer_id\":\"CUST-123\",\"status\":\"SHIPPED\",\"items\":[{\"name\":\"Wireless Headphones Pro\",\"qty\":1,\"price\":89.99}],\"total\":89.99,\"tracking_number\":\"TRK987654321\",\"carrier\":\"UPS\",\"estimated_delivery\":\"2026-10-01\"}"}]
+2026-09-29T02:34:55.593000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 {"timestamp": "2026-09-29T02:34:55.593Z", "level": "INFO", "message": "Invocation completed successfully (3.388s)", "logger": "bedrock_agentcore.app", "requestId": "218686b4-9622-405f-a02d-3c220a9fd3d1", "sessionId": "ec72a847-e578-4969-9e57-4694f3296305"}
+2026-09-29T02:34:55.593000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 INFO:bedrock_agentcore.app:Invocation completed successfully (3.388s)
+2026-09-29T02:35:03.051000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 Tool #1: refund-processor___initiate_refund
+2026-09-29T02:35:04.318000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 Perfect! Your refund has been successfully initiated:
+2026-09-29T02:35:04.318000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 **Refund Summary:**
+2026-09-29T02:35:04.320000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 - **Refund ID:** REF-JPCH2WSF
+2026-09-29T02:35:04.321000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 - **Order ID:** ORD-002 (Kindle Paperwhite)
+2026-09-29T02:35:04.321000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 - **Status:** APPROVED
+2026-09-29T02:35:04.321000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 - **Amount:** $139.99
+2026-09-29T02:35:04.322000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 - **Message:** "Refund approved. Credit appears in 3-5 business days."
+2026-09-29T02:35:04.551000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 - **Created At:** September 29, 2026
+2026-09-29T02:35:04.555000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 Your refund of $139.99 has been approved and you should see the credit appear in your account within 3-5 business days. The defective screen issue with your Kindle Paperwhite has been properly documented in our system.
+2026-09-29T02:35:04.714000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 Is there anything else I can help you with regarding this return?
+2026-09-29T02:35:04.714000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 [MCP tools/call] Tool: refund-processor___initiate_refund | Arguments: {"reason": "defective screen", "order_id": "ORD-002", "amount": 139.99}
+2026-09-29T02:35:04.714000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 [MCP tools/call Result] Status: success | Payload: [{"text": "{\"statusCode\":200,\"body\":\"{\\\"refund_id\\\": \\\"REF-JPCH2WSF\\\", \\\"order_id\\\": \\\"ORD-002\\\", \\\"status\\\": \\\"APPROVED\\\", \\\"amount\\\": 139.99, \\\"message\\\": \\\"Refund approved. Credit appears in 3-5 business days.\\\", \\\"created_at\\\": \\\"2026-09-29T02:35:03.393861\\\"}\"}"}]
+2026-09-29T02:35:04.716000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 {"timestamp": "2026-09-29T02:35:04.716Z", "level": "INFO", "message": "Invocation completed successfully (3.246s)", "logger": "bedrock_agentcore.app", "requestId": "01b7875a-d2f5-4709-8579-07757d8acf4d", "sessionId": "ec72a847-e578-4969-9e57-4694f3296305"}
+2026-09-29T02:35:04.716000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 INFO:bedrock_agentcore.app:Invocation completed successfully (3.246s)
+2026-09-29T02:35:11.790000+00:00 2026/09/29/[runtime-logs-ec72a847-e578-4969-9e57-4694f3296305]5d57a3c9-bad5-4b3f-ab9c-c985748a5d15 Tool #1: calculate_loyalty_discount
+
+=== 8. GATEWAY TARGET DEFINITIONS (API ROUTE VS LAMBDA ROUTE) ===
+{
+  "targetId": "TDGZNUZJEP",
+  "name": "order-tracker",
+  "status": "READY",
+  "description": null,
+  "targetConfiguration": {
+    "mcp": {
+      "apiGateway": {
+        "restApiId": "10ruhwt2il",
+        "stage": "prod",
+        "apiGatewayToolConfiguration": {
+          "toolOverrides": [
+            {
+              "name": "get_customer",
+              "description": "",
+              "path": "/customers/{customer_id}",
+              "method": "GET"
+            },
+            {
+              "name": "get_customer_orders",
+              "description": "",
+              "path": "/customers/{customer_id}/orders",
+              "method": "GET"
+            },
+            {
+              "name": "get_order",
+              "description": "",
+              "path": "/orders/{order_id}",
+              "method": "GET"
+            }
+          ],
+          "toolFilters": [
+            {
+              "filterPath": "/customers/{customer_id}",
+              "methods": [
+                "GET"
+              ]
+            },
+            {
+              "filterPath": "/customers/{customer_id}/orders",
+              "methods": [
+                "GET"
+              ]
+            },
+            {
+              "filterPath": "/orders/{order_id}",
+              "methods": [
+                "GET"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+{
+  "targetId": "WJ8LALJ9XQ",
+  "name": "refund-processor",
+  "status": "READY",
+  "description": null,
+  "targetConfiguration": {
+    "mcp": {
+      "lambda": {
+        "lambdaArn": "arn:aws:lambda:us-east-1:220422419370:function:refund-processor",
+        "toolSchema": {
+          "inlinePayload": [
+            {
+              "name": "initiate_refund",
+              "description": "Initiate a refund for a customer order.",
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "description": "Reason for refund"
+                  },
+                  "amount": {
+                    "type": "number",
+                    "description": "Refund amount in USD"
+                  },
+                  "order_id": {
+                    "type": "string",
+                    "description": "Order ID to refund"
+                  }
+                },
+                "required": [
+                  "order_id",
+                  "reason"
+                ]
+              }
+            },
+            {
+              "name": "check_refund_status",
+              "description": "Check the status of an existing refund.",
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "refund_id": {
+                    "type": "string",
+                    "description": "Refund ID to check"
+                  }
+                },
+                "required": [
+                  "refund_id"
+                ]
+              }
+            },
+            {
+              "name": "get_return_label",
+              "description": "Generate a prepaid return shipping label for an order.",
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "order_id": {
+                    "type": "string",
+                    "description": "Order ID needing a label"
+                  }
+                },
+                "required": [
+                  "order_id"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
